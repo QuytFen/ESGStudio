@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+ket_qua/
+bao_cao/*.pdf
+tmp/
+tools/downloads/
+.app_state/
+build/
+dist/
+releases/

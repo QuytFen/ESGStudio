@@ -1,0 +1,8 @@
+pdfplumber>=0.11,<1
+pytesseract>=0.3.13,<1
+pypdfium2>=4.30,<6
+pandas>=2.2,<4
+numpy>=1.26,<3
+scikit-learn>=1.5,<2
+openpyxl>=3.1,<4
+# Tùy chọn: pip install underthesea
