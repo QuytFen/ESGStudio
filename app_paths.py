@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import sys
 
-APP_VERSION = '1.0.1'
+APP_VERSION = '1.1.0'
 FROZEN = bool(getattr(sys, 'frozen', False))
 RESOURCE_ROOT = Path(__file__).resolve().parent
 APP_ROOT = Path(sys.executable).resolve().parent if FROZEN else RESOURCE_ROOT

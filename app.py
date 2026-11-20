@@ -24,6 +24,8 @@ from excel_output import EXCEL_NAME, create_excel, open_excel
 from ui_layout import FlowButtons, ScrollablePage, WheelRouter
 from session_store import DEFAULT_SESSION, load_session, save_session
 from app_paths import APP_VERSION, DATA_ROOT, RESOURCE_ROOT, FROZEN
+from dictionary_store import default_dictionary, save_dictionary
+from dictionary_ui import DictionaryPanel
 
 ROOT = DATA_ROOT
 META_FIELDS = ['ma', 'ten_cong_ty', 'nganh', 'nam', 'ky_bao_cao']
@@ -111,7 +113,7 @@ def write_inputs(reports, folder):
             writer.writerows(rows)
 
 
-def run_analysis(reports, out, tesseract, poppler, events, include_tables=True):
+def run_analysis(reports, out, tesseract, poppler, events, include_tables=True, dictionary=None):
     """Luồng nền chỉ gửi sự kiện; mọi cập nhật Tk thực hiện trên luồng chính."""
     try:
         validate_reports(reports)
@@ -119,6 +121,8 @@ def run_analysis(reports, out, tesseract, poppler, events, include_tables=True):
         out.mkdir(parents=True, exist_ok=False)
         config = out / 'dau_vao'
         write_inputs(reports, config)
+        dictionary_path = config / 'tu_dien.json'
+        save_dictionary(dictionary_path, default_dictionary() if dictionary is None else dictionary)
         with tempfile.TemporaryDirectory(prefix='esg_') as temp:
             for r in reports:
                 events.put(('log', f'Chuẩn bị: {r.path.name}\n'))
@@ -127,7 +131,7 @@ def run_analysis(reports, out, tesseract, poppler, events, include_tables=True):
             if python.name.lower() == 'pythonw.exe':
                 python = python.with_name('python.exe')
             arguments = ['--input', temp, '--out', str(out), '--metadata', str(config / 'danh_sach.csv'),
-                         '--pages', str(config / 'trang_thu_cong.csv')]
+                         '--pages', str(config / 'trang_thu_cong.csv'), '--dictionary', str(dictionary_path)]
             if tesseract:
                 arguments += ['--tesseract', tesseract]
             if poppler:
@@ -230,7 +234,8 @@ class ESGApp(tk.Tk):
                         for uid, report in self.entries.items()],
             'selected': self.current,
             'settings': {'output_root': self.output_root.get(), 'tesseract': self.tesseract.get(),
-                         'poppler': self.poppler.get(), 'include_tables': self.include_tables.get()},
+                         'poppler': self.poppler.get(), 'include_tables': self.include_tables.get(),
+                         'dictionary': self.dictionary_panel.selected_id()},
             'last_result': str(self.out) if self.out else None,
         }
         try:
@@ -283,6 +288,7 @@ class ESGApp(tk.Tk):
             self.files.insert('', 'end', iid=uid)
             self._render_report(uid)
         settings = state.get('settings', {})
+        self.dictionary_panel.restore_selection(settings.get('dictionary', 'default'))
         if isinstance(settings.get('include_tables'), bool):
             self.include_tables.set(settings['include_tables'])
         for key, variable in (('output_root', self.output_root), ('tesseract', self.tesseract), ('poppler', self.poppler)):
@@ -556,6 +562,8 @@ class ESGApp(tk.Tk):
         parent.rowconfigure(5, weight=2, minsize=100)
 
     def _settings(self, parent):
+        self.dictionary_panel = DictionaryPanel(parent, ROOT / 'tu_dien_ca_nhan', self._queue_session_save)
+        self.dictionary_panel.pack(fill='x', pady=(0, 18))
         ttk.Label(parent, text='Phạm vi đếm từ', style='Heading.TLabel').pack(anchor='w', pady=(0, 8))
         self.tables_check = ttk.Checkbutton(parent, text='Đếm cả nội dung trong bảng', variable=self.include_tables)
         self.tables_check.pack(anchor='w', pady=(0, 6))
@@ -758,7 +766,7 @@ class ESGApp(tk.Tk):
         self.status.set('Đang xử lý • Có thể theo dõi tiến trình trong nhật ký')
         self.tabs.select(1)
         self._set_busy(True)
-        threading.Thread(target=run_analysis, args=(reports, out, self.tesseract.get().strip(), self.poppler.get().strip(), self.events, self.include_tables.get()), daemon=True).start()
+        threading.Thread(target=run_analysis, args=(reports, out, self.tesseract.get().strip(), self.poppler.get().strip(), self.events, self.include_tables.get(), self.dictionary_panel.current_dictionary()), daemon=True).start()
 
     def _append_log(self, text):
         self.log.configure(state='normal')

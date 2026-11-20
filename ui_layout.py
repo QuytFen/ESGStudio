@@ -56,6 +56,12 @@ class FlowButtons(ttk.Frame):
         self.buttons.append(button)
         self._schedule()
 
+    def destroy(self):
+        if self._pending is not None:
+            self.after_cancel(self._pending)
+            self._pending = None
+        super().destroy()
+
     def _schedule(self, event=None):
         if self._pending is None:
             self._pending = self.after_idle(self._layout)

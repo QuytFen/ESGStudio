@@ -6,7 +6,7 @@ import shutil
 import zipfile
 
 ROOT = Path(__file__).resolve().parent
-GUIDE = '''ESG STUDIO 1.0.1 — WINDOWS 64-BIT
+GUIDE = '''ESG STUDIO 1.1.0 — WINDOWS 64-BIT
 made by Quýt
 
 BẢN MỘT FILE:
@@ -20,6 +20,7 @@ Giữ nguyên thư mục _internal, không lấy riêng file .exe ra ngoài.
 SỬ DỤNG:
 Thêm PDF, điền thông tin, chọn khoảng trang rồi bấm Bắt đầu phân tích.
 Mặc định đếm cả chữ trong bảng. Có thể thay đổi ở Cài đặt.
+Trong Cài đặt, sao chép bộ từ điển để sửa từ khóa Anh/Việt, nhập/xuất Excel.
 Bấm Mở file Excel để xem kết quả. Sheet Từ khóa theo trang giúp đối chiếu.
 
 DỮ LIỆU:

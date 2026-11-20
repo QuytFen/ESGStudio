@@ -10,6 +10,7 @@ from lam_sach import lam_sach, ngon_ngu
 from trich_xuat import trich_xuat, chon_trang
 from lda import chay_lda
 from xuat_ket_qua import export
+from dictionary_store import default_dictionary, load_dictionary, dictionary_groups, fingerprint
 
 def read_csv(path, required):
     with open(path, encoding='utf-8-sig', newline='') as stream:
@@ -32,7 +33,15 @@ def main():
     parser.add_argument('--tesseract', help='Đường dẫn tesseract.exe nếu chưa có trong PATH')
     parser.add_argument('--poppler', help='Tương thích lệnh cũ; bộ đọc PDF tích hợp không cần Poppler')
     parser.add_argument('--exclude-tables', action='store_true', help='Chỉ đếm phần ngoài bảng có đường kẻ. Mặc định tính cả bảng.')
+    parser.add_argument('--dictionary', help='Bản từ điển JSON xuất từ app')
     args = parser.parse_args()
+    try:
+        dictionary = load_dictionary(args.dictionary) if args.dictionary else default_dictionary()
+        groups = dictionary_groups(dictionary)
+        dictionary_hash = fingerprint(dictionary)
+        print(f"Từ điển: {dictionary['name']} · SHA-256: {dictionary_hash}", flush=True)
+    except (OSError, ValueError) as exc:
+        parser.error(str(exc))
     folder = Path(args.input)
     if not folder.is_dir():
         parser.error(f'Không có thư mục {folder.resolve()}')
@@ -80,8 +89,8 @@ def main():
             if not total:
                 raise ValueError('Không có chữ trong phần đã chọn; kiểm tra OCR và khoảng trang')
             # Đếm độc lập từng trang để không ghép từ/cụm từ qua ranh giới trang.
-            page_counts = {p['number']: dem_tu(p['text'], language) for p in selected}
-            counts = Counter(dem_tu('', language))
+            page_counts = {p['number']: dem_tu(p['text'], language, groups) for p in selected}
+            counts = Counter(dem_tu('', language, groups))
             for values in page_counts.values():
                 counts.update(values)
             totals = {g: sum(n for (group, _), n in counts.items() if group==g) for g in ('SYMB','SUBST','E5')}
@@ -89,6 +98,7 @@ def main():
                       'ngon_ngu': language, 'pages': selected, 'trang_dau': selected[0]['number'],
                       'trang_cuoi': selected[-1]['number'], 'so_trang': len(selected), 'so_tu': total,
                       'counts': counts, 'page_counts': page_counts,
+                      'bo_tu_dien': dictionary['name'], 'ma_tu_dien': dictionary_hash,
                       'pham_vi_van_ban': 'Loại nội dung bảng' if args.exclude_tables else 'Gồm nội dung bảng',
                       'ocr': any(p['ocr'] for p in selected), 'selection': selection,
                       'SUBST_RATIO': totals['SUBST']/(totals['SUBST']+totals['SYMB']) if totals['SUBST']+totals['SYMB'] else None}
@@ -103,7 +113,7 @@ def main():
             errors.append(error)
     try:
         lda = chay_lda(reports) if reports else {'nhom': {}, 'ghi_chu': 'Không có báo cáo xử lý thành công'}
-        export(reports, lda, args.out, errors)
+        export(reports, lda, args.out, errors, dictionary=dictionary)
     except Exception as exc:
         print(f'LỖI LDA/xuất kết quả: {exc}', file=sys.stderr)
         return 1

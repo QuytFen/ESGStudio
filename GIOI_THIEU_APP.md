@@ -1,6 +1,6 @@
 # ESG Studio
 
-**made by Quýt** · Phiên bản 1.0.1 · Ứng dụng desktop Windows 64-bit
+**made by Quýt** · Phiên bản 1.1.0 · Ứng dụng desktop Windows 64-bit
 
 ESG Studio hỗ trợ đọc báo cáo PDF của doanh nghiệp, thống kê các từ khóa về công bố ESG/ESRS E5, khám phá chủ đề bằng LDA và xuất kết quả Excel. Người dùng chọn PDF và nhập thông tin ngay trên giao diện, không cần sửa mã nguồn hoặc gõ lệnh mỗi lần phân tích.
 
@@ -46,7 +46,7 @@ Mặc định, app giữ cả chữ trong bảng. Có thể tắt **Đếm cả 
 
 ### 3. Đếm theo từ điển
 
-Bộ từ điển hiện có 25 mục SYMB, 14 SUBST và 27 E5, kèm các biến thể hoặc cụm từ tương ứng tiếng Việt. App nhận diện ngôn ngữ bằng tỷ lệ ký tự có dấu tiếng Việt; kết quả này quyết định bộ mẫu từ khóa được dùng.
+Bộ mặc định có 25 mục SYMB, 14 SUBST và 27 E5, kèm các biến thể hoặc cụm từ tương ứng tiếng Việt. Người dùng có thể sao chép thành nhiều bộ cá nhân, thêm/sửa/xóa/tạm tắt mục, nhập/xuất Excel và thử đếm đoạn văn trong Cài đặt. Mỗi lần chạy lưu bản chụp từ điển và ghi tên/mã SHA-256 vào sheet Chỉ số để tái kiểm tra. App nhận diện ngôn ngữ bằng tỷ lệ ký tự có dấu tiếng Việt; kết quả này quyết định bộ mẫu từ khóa được dùng.
 
 App khớp nguyên từ, ưu tiên cụm dài và tránh đếm chồng cùng một đoạn chữ. Ví dụ, `pre-assessment` được tính cho mục Pre-assessment, không cộng thêm cho Assessment. Mục Assessment có thể gộp `assessment` và `assessments`. Các trang được đếm độc lập để tránh ghép nhầm cụm từ qua ranh giới trang.
 

@@ -6,12 +6,13 @@ from collections import Counter
 from pathlib import Path
 from dem_tu import dem_tu
 from excel_output import create_excel
+from dictionary_store import default_dictionary, dictionary_groups, save_dictionary, fingerprint
 
 HEADERS = ['STT','Topic chung','Tên bài báo (có thể bỏ link doi r đổi tên)','Tạp chí xuất bản','SSCI','Năm','Tác giả',
            'Câu hỏi nghiên cứu','Mẫu','Cỡ mẫu','Quốc gia','Phương pháp thu thập dữ liệu','Foundation theory',
            'Mô hình nghiên cứu','Biến độc lập','Biến phụ thuộc','Kết quả','Limitations','Đề xuất trong tương lai',
            'Đóng góp gì cho bài mình','Tên người làm']
-FIELDS = ['ma','nam','loai','ngon_ngu','trang_dau','trang_cuoi','so_trang','so_tu','SYMB_1000','SUBST_1000','E5_1000','SUBST_RATIO','pham_vi_van_ban']
+FIELDS = ['ma','nam','loai','ngon_ngu','trang_dau','trang_cuoi','so_trang','so_tu','SYMB_1000','SUBST_1000','E5_1000','SUBST_RATIO','pham_vi_van_ban','bo_tu_dien','ma_tu_dien']
 
 def write_csv(path, fields, rows, delimiter=','):
     with open(path, 'w', encoding='utf-8-sig', newline='') as stream:
@@ -19,9 +20,15 @@ def write_csv(path, fields, rows, delimiter=','):
         writer.writeheader()
         writer.writerows(rows)
 
-def export(reports, lda, out, errors):
+def export(reports, lda, out, errors, dictionary=None):
+    dictionary = default_dictionary() if dictionary is None else dictionary
+    groups = dictionary_groups(dictionary)
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
+    save_dictionary(out / 'tu_dien_da_dung.json', dictionary)
+    for report in reports:
+        report['bo_tu_dien'] = dictionary['name']
+        report['ma_tu_dien'] = fingerprint(dictionary)
     write_csv(out/'chi_so_doanh_nghiep.csv', FIELDS, reports)
     keywords = []
     for r in reports:
@@ -76,7 +83,7 @@ def export(reports, lda, out, errors):
             for page in r['pages']:
                 for sentence in re.split(r'(?<=[.!?])\s+|\n', page['raw']):
                     value = f"[trang {page['number']}] {sentence.strip()}"
-                    if value not in examples and dem_tu(sentence, r['ngon_ngu'])[key] > 0:
+                    if value not in examples and dem_tu(sentence, r['ngon_ngu'], groups).get(key, 0) > 0:
                         examples.append(value)
                     if len(examples) >= 5:
                         break
@@ -114,7 +121,7 @@ def export(reports, lda, out, errors):
                   f"{r['so_trang']} trang, khoảng {r['so_tu']} từ/âm tiết",'Việt Nam',
                   'Người dùng tải PDF; trích phần PTBV; '+('có OCR' if r['ocr'] else 'không dùng OCR'),
                   'Lý thuyết tính chính danh, lý thuyết thể chế; phân loại symbolic – substantive',
-                  'Đếm từ khóa (Ji et al. 2024; ESRS E5 Phụ lục A) và LDA, theo Hadro et al. (2025)',
+                  f"Đếm từ khóa và LDA; bộ từ điển: {dictionary['name']} (xem tu_dien_da_dung.json). Bộ mặc định tham khảo Ji et al. 2024; ESRS E5; Hadro et al.",
                   'Không có (phân tích mô tả)','Tỷ lệ từ substantive; số thuật ngữ E5 trên 1.000 từ',
                   result,'; '.join(flags),'','','']
         sheet.append(dict(zip(HEADERS, [re.sub(r'[\t\r\n]+', ' ', str(v)) for v in values])))

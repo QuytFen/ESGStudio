@@ -54,7 +54,8 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(process.returncode, 0, process.stderr+process.stdout)
             self.assertIn('TEST_2024_PTBV', process.stdout)
             out = root/'ket_qua'
-            self.assertEqual(len(list(out.iterdir())), 9)
+            self.assertEqual(len(list(out.iterdir())), 10)
+            self.assertTrue((out / 'tu_dien_da_dung.json').is_file())
             with (out/'chi_so_doanh_nghiep.csv').open(encoding='utf-8-sig', newline='') as f:
                 report = next(csv.DictReader(f))
             self.assertEqual(report['so_tu'], '288')

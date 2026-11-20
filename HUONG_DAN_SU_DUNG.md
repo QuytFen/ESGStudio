@@ -1,6 +1,6 @@
 # Hướng dẫn sử dụng ESG Studio
 
-**made by Quýt** · Phiên bản 1.0.1
+**made by Quýt** · Phiên bản 1.1.0
 
 ## 1. Mở app
 
@@ -142,3 +142,14 @@ Chọn dòng có đánh dấu **Chọn lại PDF**, bấm nút cùng tên rồi 
 Đóng app trước khi thay file `.exe`. Giữ thư mục `du_lieu` và các PDF gốc để giữ phiên làm việc. Với bản portable, cập nhật cả các thư viện đi kèm, không trộn `_internal` của các phiên bản.
 
 Thông tin về cơ chế xử lý và giới hạn: [GIOI_THIEU_APP.md](GIOI_THIEU_APP.md).
+
+## Tùy chỉnh bộ từ điển (từ phiên bản 1.1.0)
+
+Trong **Cài đặt & hướng dẫn**, chọn bộ từ điển cho lần chạy tiếp theo. Bấm **Sao chép thành bộ riêng** để giữ bộ mặc định và tạo bản cá nhân.
+
+- Mỗi mục gồm nhóm SYMB/SUBST/E5, tên, biến thể Anh/Việt và trạng thái **Dùng**. Mỗi biến thể nằm trên một dòng.
+- Chọn mục để sửa, bấm **Áp dụng mục** trước khi chọn mục khác, rồi **Lưu bộ từ điển**. Có thể thêm, xóa và tạm tắt mục. Giữ mẫu regex tiếng Anh có sẵn nếu chưa cần sửa quy tắc nâng cao.
+- Ô **Thử đếm** kiểm tra các mục đã áp dụng theo ngôn ngữ vi/en được chọn.
+- **Xuất Excel / mẫu** để chỉnh hàng loạt; trong ô dùng Alt+Enter để xuống dòng. Giữ nguyên tiêu đề, cột `bat` là 1 hoặc 0. **Nhập Excel** tạo bộ mới.
+- Mỗi lần chạy lưu `tu_dien_da_dung.json`; sheet Chỉ số ghi tên và mã SHA-256 của bộ đã dùng. Muốn áp dụng sửa đổi cần chạy lại phân tích.
+- Bộ cá nhân nằm trong `tu_dien_ca_nhan` của thư mục dữ liệu; bản exe là `du_lieu/tu_dien_ca_nhan`. Giữ cả thư mục dữ liệu khi cập nhật app.

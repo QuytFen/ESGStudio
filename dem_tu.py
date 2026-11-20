@@ -3,11 +3,12 @@ import re
 from lam_sach import lam_sach
 from tu_dien import GROUPS
 
-def dem_tu(text, language):
+def dem_tu(text, language, groups=None):
+    groups = GROUPS if groups is None else groups
     text = lam_sach(text)
-    counts = {(group, name): 0 for group, entries in GROUPS.items() for name, _, _ in entries}
+    counts = {(group, name): 0 for group, entries in groups.items() for name, _, _ in entries}
     candidates = []
-    for group, entries in GROUPS.items():
+    for group, entries in groups.items():
         for name, english, vietnamese in entries:
             patterns = [english] if language == 'en' else [re.escape(lam_sach(v)) for v in vietnamese]
             for pattern in patterns:

@@ -1,6 +1,6 @@
 ﻿# ESG Studio
 
-**made by Quýt** · Phiên bản 1.0.1 · Windows 64-bit
+**made by Quýt** · Phiên bản 1.1.0 · Windows 64-bit
 
 ESG Studio là ứng dụng desktop hỗ trợ phân tích báo cáo PDF của doanh nghiệp: trích chữ, nhận dạng trang scan, thống kê từ khóa SYMB/SUBST/E5, khám phá chủ đề bằng LDA và xuất kết quả Excel. Bạn chọn file và nhập thông tin ngay trên giao diện, không cần gõ lệnh mỗi lần sử dụng.
 
@@ -26,6 +26,7 @@ Hãy chọn đúng file app trong **Assets**. Các mục **Source code (zip)** v
 - Đọc một hoặc nhiều PDF, hỗ trợ OCR tiếng Việt và tiếng Anh cho trang ít chữ.
 - Tự xác định số trang, cho phép chọn khoảng trang riêng cho từng báo cáo.
 - Đếm theo bộ từ khóa SYMB, SUBST và E5; mặc định tính cả chữ trong bảng.
+- Quản lý nhiều bộ từ điển cá nhân, sửa biến thể Anh/Việt, bật/tắt từ khóa, nhập/xuất Excel và thử đếm đoạn văn.
 - Xuất số đếm theo từng trang PDF để đối chiếu.
 - Phân tích chủ đề bằng LDA khi đủ dữ liệu.
 - Xuất Excel với các bảng tổng hợp, chỉ số, từ khóa và chủ đề.
@@ -77,6 +78,19 @@ Trong tab **Cài đặt & hướng dẫn** (hoặc **Cài đặt**):
 `so_lan`, `so_tu` và các tần suất luôn được tính trên cùng phạm vi trang và tùy chọn bảng.
 
 ### 5. Chạy phân tích
+
+Trước khi chạy, vào **Cài đặt & hướng dẫn → Bộ từ điển** để chọn bộ cần dùng. Bộ **Mặc định** được giữ nguyên; bấm **Sao chép thành bộ riêng** để tùy chỉnh:
+
+1. Đặt tên bộ theo nhu cầu nghiên cứu. Chọn một mục để sửa hoặc bấm **Mục mới**.
+2. Chọn nhóm SYMB/SUBST/E5, tên mục và nhập các biến thể tiếng Anh/Việt, mỗi dòng một cụm. Bỏ chọn **Dùng** để tạm tắt mục.
+3. Bấm **Áp dụng mục** trước khi chuyển sang mục khác; sau đó **Lưu bộ từ điển**. Mẫu tiếng Anh nâng cao là regex có sẵn; giữ nguyên nếu chưa cần sửa.
+4. Dùng **Thử đếm** với đoạn văn và ngôn ngữ đã chọn để kiểm tra các mục đã áp dụng.
+
+**Xuất Excel / mẫu** tạo file có sheet Từ điển và Hướng dẫn. Trong Excel, dùng Alt+Enter để tách các biến thể trong cùng ô; cột `bat` nhận 1 hoặc 0. **Nhập Excel** tạo một bộ mới, giữ nguyên các bộ cũ. App chặn tên mục trùng trong cùng nhóm và báo biến thể trùng để rà soát; cùng đoạn chữ vẫn chỉ được đếm một lần, ưu tiên cụm dài.
+
+Các bộ cá nhân lưu tại `tu_dien_ca_nhan/` trong thư mục dữ liệu (bản exe: `du_lieu/tu_dien_ca_nhan/`). App nhớ bộ đã chọn. Mỗi lần phân tích lưu `tu_dien_da_dung.json` cùng kết quả; sheet **Chỉ số** có `bo_tu_dien` và `ma_tu_dien` (SHA-256) để đối chiếu. Sửa từ điển không thay đổi kết quả cũ; cần chạy lại để áp dụng.
+
+Khi chạy dòng lệnh, dùng `--dictionary duong_dan.json` với bản chụp JSON của một lần chạy; bỏ tùy chọn này để dùng bộ mặc định.
 
 Bấm **Bắt đầu phân tích**, theo dõi tab **Kết quả phân tích** và **Nhật ký xử lý**. Chờ xử lý hoàn tất trước khi đóng app. Một PDF bị lỗi không ngăn các PDF khác tiếp tục được xử lý; nhật ký ghi rõ file và nguyên nhân lỗi.
 
@@ -145,7 +159,7 @@ App dùng `pdfplumber` để đọc lớp chữ trong PDF. Trang có ít hơn 30
 
 App chuẩn hóa Unicode, chuyển chữ về chữ thường, nối từ bị ngắt dòng bằng gạch nối, bỏ URL/email, chữ số và dấu câu. Ngôn ngữ được nhận diện bằng tỷ lệ ký tự có dấu tiếng Việt để chọn bộ mẫu đếm tương ứng.
 
-Từ điển hiện có **25 mục SYMB, 14 SUBST và 27 E5**, kèm các biến thể hoặc cụm từ tiếng Việt. App khớp nguyên từ, ưu tiên cụm dài và không đếm chồng cùng một đoạn chữ. Ví dụ, `assessment` và `assessments` được gộp vào Assessment; `pre-assessment` được tính riêng cho Pre-assessment. Mỗi trang được đếm độc lập để tránh ghép nhầm cụm từ qua ranh giới trang.
+Bộ từ điển mặc định có **25 mục SYMB, 14 SUBST và 27 E5**, kèm các biến thể hoặc cụm từ tiếng Việt. Bộ cá nhân có thể thay đổi số mục và biến thể. App khớp nguyên từ, ưu tiên cụm dài và không đếm chồng cùng một đoạn chữ. Ví dụ, `assessment` và `assessments` được gộp vào Assessment; `pre-assessment` được tính riêng cho Pre-assessment. Mỗi trang được đếm độc lập để tránh ghép nhầm cụm từ qua ranh giới trang.
 
 ### Phân tích chủ đề LDA
 
