@@ -46,8 +46,9 @@ class ScrollablePage(ttk.Frame):
 
 class FlowButtons(ttk.Frame):
     """Các nút tự xuống hàng khi cửa sổ hoặc cỡ chữ thay đổi."""
-    def __init__(self, parent):
+    def __init__(self, parent, align='left'):
         super().__init__(parent)
+        self.align = align
         self.buttons = []
         self._pending = None
         self.bind('<Configure>', self._schedule)
@@ -69,6 +70,16 @@ class FlowButtons(ttk.Frame):
     def _layout(self):
         self._pending = None
         width = max(1, self.winfo_width())
+        if self.align == 'right':
+            sizes = [button.winfo_reqwidth() + 8 for button in self.buttons]
+            columns = max(1, len(sizes))
+            while columns > 1 and (len(sizes) % columns or
+                    sum(max(sizes[i::columns], default=0) for i in range(columns)) > width):
+                columns -= 1
+            self.grid_anchor('e')
+            for index, button in enumerate(self.buttons):
+                button.grid(row=index // columns, column=index % columns, sticky='e', padx=(8, 0), pady=(0, 6))
+            return
         row = column = used = 0
         for button in self.buttons:
             size = button.winfo_reqwidth() + 8

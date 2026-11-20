@@ -1,6 +1,6 @@
 # ESG Studio
 
-**made by Quýt** · Phiên bản 1.1.0 · Ứng dụng desktop Windows 64-bit
+**made by Quýt** · Phiên bản 1.1.1 · Ứng dụng desktop Windows 64-bit
 
 ESG Studio hỗ trợ đọc báo cáo PDF của doanh nghiệp, thống kê các từ khóa về công bố ESG/ESRS E5, khám phá chủ đề bằng LDA và xuất kết quả Excel. Người dùng chọn PDF và nhập thông tin ngay trên giao diện, không cần sửa mã nguồn hoặc gõ lệnh mỗi lần phân tích.
 

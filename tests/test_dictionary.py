@@ -64,7 +64,13 @@ class DictionaryTests(unittest.TestCase):
             loaded = import_dictionary_excel(root / 'dictionary.xlsx')
             self.assertEqual(loaded['entries'], data['entries'])
             book = load_workbook(root / 'dictionary.xlsx')
+            self.assertEqual(book.sheetnames, ['Hướng dẫn', 'Từ điển'])
+            self.assertEqual(book.active.title, 'Hướng dẫn')
             self.assertEqual(book['Hướng dẫn']['A1'].data_type, 's')
+            self.assertEqual(book['Từ điển'].max_row, len(data['entries']) + 1)
+            for row, field in enumerate(('nhom', 'ten', 'tieng_anh', 'tieng_viet', 'bat', 'mau_anh_nang_cao'), 7):
+                self.assertEqual(book['Hướng dẫn'].cell(row, 1).value, field)
+            self.assertIn('evaluated', book['Hướng dẫn']['C16'].value)
             book.close()
 
     def test_worker_uses_custom_dictionary_and_keeps_snapshot(self):

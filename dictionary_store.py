@@ -137,14 +137,72 @@ def export_dictionary_excel(path, data):
     validation = DataValidation(type='list', formula1='"SYMB,SUBST,E5"')
     sheet.add_data_validation(validation)
     validation.add('A2:A1048576')
-    info = book.create_sheet('Hướng dẫn')
-    for text in [data['name'], 'Mỗi dòng là một mục. Các biến thể trong ô cách nhau bằng xuống dòng (Alt+Enter).',
-                 'bat: 1 = dùng, 0 = tạm tắt. Giữ nguyên hàng tiêu đề.',
-                 'mau_anh_nang_cao: regex có sẵn; có thể để trống và nhập các biến thể tiếng Anh.',
-                 'Nhập lại Excel sẽ tạo một bộ mới, không ghi đè bộ cũ.']:
-        cell = info.cell(info.max_row + 1 if info['A1'].value else 1, 1, text)
+    info = book.create_sheet('Hướng dẫn', 0)
+    book.active = 0
+    info.sheet_view.showGridLines = False
+    info.freeze_panes = 'B7'
+    for col in 'ABCDEF':
+        info.column_dimensions[col].width = 22
+
+    def guide_cell(row, column, text, end_column=None, heading=False):
+        if end_column is not None:
+            info.merge_cells(start_row=row, start_column=column, end_row=row, end_column=end_column)
+        cell = info.cell(row, column, text)
         cell.data_type = 's'
-    info.column_dimensions['A'].width = 110
+        cell.font = Font(name='Calibri', size=11, bold=heading, color='FFFFFF' if heading else '192B43')
+        cell.alignment = Alignment(wrap_text=True, vertical='top')
+        cell.fill = PatternFill('solid', fgColor='147D70' if heading else ('EEF5F4' if row % 2 else 'FFFFFF'))
+
+    guide_cell(1, 1, 'HƯỚNG DẪN NHẬP BỘ TỪ ĐIỂN', 6, heading=True)
+    info.row_dimensions[1].height = 30
+    guide_cell(2, 1, f'Bộ được xuất: {data["name"]}', 6)
+    guide_cell(3, 1, 'Bắt đầu tại đây: đọc cách điền từng cột bên dưới, sau đó chuyển sang sheet Từ điển để sửa hoặc thêm mục.', 6)
+    guide_cell(4, 1, 'Mỗi dòng trong sheet Từ điển là một mục. Giữ nguyên tên sheet, 6 cột và hàng tiêu đề; không chèn dòng hướng dẫn vào bảng dữ liệu.', 6)
+    for row in (2, 3, 4):
+        info.row_dimensions[row].height = 32
+    guide_cell(6, 1, 'Cột trong sheet Từ điển', heading=True)
+    guide_cell(6, 2, 'Ý nghĩa và cách điền', 4, heading=True)
+    guide_cell(6, 5, 'Ví dụ nội dung trong một ô', 6, heading=True)
+    info.row_dimensions[6].height = 32
+    fields = [
+        ('nhom', 'Bắt buộc. Chọn đúng SYMB, SUBST hoặc E5. SYMB: từ khóa về công bố hình thức; SUBST: công bố thực chất; E5: tài nguyên và kinh tế tuần hoàn.', 'E5', 68),
+        ('ten', 'Bắt buộc. Tên mục dùng để gộp số đếm và hiển thị trong kết quả. Tên không tự trở thành từ cần tìm; hãy nhập các dạng cần tìm vào cột biến thể hoặc regex. Không trùng tên trong cùng nhóm.', 'Tái chế nhựa', 78),
+        ('tieng_anh', 'Các từ/cụm tiếng Anh cần tìm. Mỗi biến thể một dòng trong CÙNG ô (Alt+Enter trên Windows). Không ngăn cách bằng dấu phẩy. App không tự thêm đuôi -ed, -ing, -ion hoặc số nhiều. Có thể để trống nếu chỉ dùng tiếng Việt hoặc regex.', 'evaluate\nevaluates\nevaluated\nevaluating\nevaluation\nevaluations', 112),
+        ('tieng_viet', 'Các từ/cụm tiếng Việt có dấu cần tìm; mỗi biến thể một dòng trong cùng ô (Alt+Enter). Có thể để trống nếu chỉ dùng tiếng Anh. Các biến thể trong một dòng dữ liệu được cộng vào cùng tên mục.', 'tái chế nhựa\nnhựa tái chế', 78),
+        ('bat', 'Bắt buộc. Điền số 1 để dùng mục, số 0 để tạm tắt; không để trống. Cần giữ ít nhất một mục đang bật trong toàn bộ bộ từ điển.', '1', 56),
+        ('mau_anh_nang_cao', 'Tùy chọn, dành cho regex tiếng Anh. Để trống nếu đã liệt kê các dạng ở tieng_anh. Ví dụ bên cạnh gộp evaluate, evaluates, evaluated, evaluating, evaluation, evaluations. Với bộ mặc định, giữ mẫu có sẵn nếu vẫn muốn dùng quy tắc gộp đó.', r'evaluat(?:e|es|ed|ing|ion|ions)', 90),
+    ]
+    for row, (field, instructions, example, height) in enumerate(fields, 7):
+        guide_cell(row, 1, field)
+        guide_cell(row, 2, instructions, 4)
+        guide_cell(row, 5, example, 6)
+        info.row_dimensions[row].height = height
+    guide_cell(14, 1, 'MỘT DÒNG MẪU HOÀN CHỈNH — chỉ minh họa, không tự nhập vào app', 6, heading=True)
+    info.row_dimensions[14].height = 28
+    for column, header in enumerate(('nhom', 'ten', 'tieng_anh', 'tieng_viet', 'bat', 'mau_anh_nang_cao'), 1):
+        guide_cell(15, column, header, heading=True)
+    info.row_dimensions[15].height = 32
+    for column, value in enumerate(('SYMB', 'Evaluate', 'evaluate\nevaluates\nevaluated\nevaluating\nevaluation\nevaluations', 'đánh giá\nthẩm định', '1', ''), 1):
+        guide_cell(16, column, value)
+    info.row_dimensions[16].height = 112
+    guide_cell(18, 1, 'LƯU VÀ NHẬP LẠI VÀO APP', 6, heading=True)
+    info.row_dimensions[18].height = 28
+    notes = [
+        '1. Sang sheet Từ điển để sửa hoặc thêm dòng. Ví dụ trên sheet Hướng dẫn không được nhập tự động. Ít nhất một trong ba cột tieng_anh, tieng_viet, mau_anh_nang_cao phải có nội dung cho mỗi mục.',
+        '2. Lưu file dưới định dạng .xlsx. Vào Cài đặt & hướng dẫn → Bộ từ điển → Nhập Excel, chọn file và đặt tên bộ mới. Các bộ cũ được giữ lại.',
+        '3. Chọn bộ mới, mở Quản lý từ điển và dùng Thử đếm với đúng ngôn ngữ vi/en để kiểm tra. Muốn áp dụng cho báo cáo, chạy phân tích lại; kết quả cũ không tự thay đổi.',
+        'Lưu ý trùng biến thể: nếu thêm Evaluate theo ví dụ, hãy tạm tắt hoặc chỉnh mục Evaluation cũ để tránh tranh khớp. App khớp nguyên từ/cụm, ưu tiên cụm dài và chỉ đếm cùng đoạn chữ một lần.',
+    ]
+    for row, text in enumerate(notes, 19):
+        guide_cell(row, 1, text, 6)
+        info.row_dimensions[row].height = 46
+    info.print_options.horizontalCentered = True
+    info.sheet_properties.pageSetUpPr.fitToPage = True
+    info.page_setup.orientation = 'landscape'
+    info.page_setup.paperSize = info.PAPERSIZE_A4
+    info.page_setup.fitToWidth = 1
+    info.page_setup.fitToHeight = 0
+    info.print_area = 'A1:F22'
     try:
         book.save(path)
     finally:

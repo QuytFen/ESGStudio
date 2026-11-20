@@ -6,7 +6,7 @@ import shutil
 import zipfile
 
 ROOT = Path(__file__).resolve().parent
-GUIDE = '''ESG STUDIO 1.1.0 — WINDOWS 64-BIT
+GUIDE = '''ESG STUDIO 1.1.1 — WINDOWS 64-BIT
 made by Quýt
 
 BẢN MỘT FILE:

@@ -100,7 +100,7 @@ class DictionaryPanel(ttk.LabelFrame):
         if path:
             try:
                 export_dictionary_excel(path, self.current_dictionary())
-                messagebox.showinfo('Đã xuất từ điển', 'Sửa trong sheet Từ điển; xem sheet Hướng dẫn để nhập lại.', parent=self)
+                messagebox.showinfo('Đã xuất từ điển', 'File mở đầu bằng sheet Hướng dẫn, có cách điền từng cột và dòng mẫu.\nChuyển sang sheet Từ điển để sửa rồi nhập lại vào app.', parent=self)
             except Exception as exc:
                 messagebox.showerror('Không xuất được Excel', str(exc), parent=self)
 
@@ -119,8 +119,11 @@ class DictionaryEditor(tk.Toplevel):
         self.transient(panel.winfo_toplevel())
         self.grab_set()
         self.protocol('WM_DELETE_WINDOW', self.close)
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
         page = ScrollablePage(self)
-        page.pack(fill='both', expand=True)
+        page.grid(row=0, column=0, sticky='nsew')
+        self.page = page
         body = page.content
         self.name = tk.StringVar(value=data['name'])
         ttk.Label(body, text='Tên bộ từ điển').pack(anchor='w')
@@ -151,11 +154,12 @@ class DictionaryEditor(tk.Toplevel):
         ttk.Label(body, text='Mẫu tiếng Anh nâng cao (regex); để trống nếu dùng các biến thể bên trên', wraplength=400).pack(anchor='w')
         self.pattern = tk.StringVar()
         ttk.Entry(body, textvariable=self.pattern).pack(fill='x')
-        buttons = FlowButtons(body)
-        buttons.pack(fill='x', pady=6)
+        ttk.Separator(self).grid(row=1, column=0, sticky='ew')
+        self.actions = FlowButtons(self, align='right')
+        self.actions.grid(row=2, column=0, sticky='ew', padx=12, pady=(8, 2))
         for label, command in [('Mục mới', self.new), ('Áp dụng mục', self.apply), ('Xóa mục', self.remove), ('Lưu bộ từ điển', self.save)]:
-            button = ttk.Button(buttons, text=label, command=command)
-            buttons.add(button)
+            button = ttk.Button(self.actions, text=label, command=command)
+            self.actions.add(button)
             if uid == 'default':
                 button.configure(state='disabled')
         ttk.Separator(body).pack(fill='x', pady=8)
@@ -227,6 +231,7 @@ class DictionaryEditor(tk.Toplevel):
         if self.form_dirty() and not messagebox.askyesno('Mục chưa áp dụng', 'Bỏ chỉnh sửa của mục đang nhập?', parent=self):
             return
         self.clear_form()
+        messagebox.showinfo('Mục mới', 'Đã mở mục mới. Nhập từ khóa và biến thể, rồi bấm Áp dụng mục.', parent=self)
 
     def clear_form(self):
         self.active = None
@@ -237,7 +242,7 @@ class DictionaryEditor(tk.Toplevel):
         for widget in (self.en, self.vi):
             widget.delete('1.0', 'end')
 
-    def apply(self):
+    def apply(self, notify=True):
         if self.uid == 'default':
             return False
         entry = self.form_entry()
@@ -256,22 +261,32 @@ class DictionaryEditor(tk.Toplevel):
         self.data = draft
         self.active = index
         self.refresh(index)
+        if notify:
+            messagebox.showinfo('Đã áp dụng mục',
+                f'Đã áp dụng “{entry["name"]}”. Bạn có thể thử đếm ngay.\nBấm Lưu bộ từ điển để giữ thay đổi khi đóng cửa sổ.', parent=self)
         return True
 
     def remove(self):
         if self.uid != 'default' and self.active is not None:
+            name = self.data['entries'][self.active]['name']
             del self.data['entries'][self.active]
             self.clear_form()
             self.refresh()
+            messagebox.showinfo('Đã xóa mục',
+                f'Đã xóa “{name}” khỏi bản đang chỉnh.\nBấm Lưu bộ từ điển để giữ thay đổi.', parent=self)
+        elif self.uid != 'default':
+            messagebox.showinfo('Chọn mục cần xóa', 'Chọn một mục trong danh sách trước khi bấm Xóa mục.', parent=self)
 
     def save(self):
         if self.uid == 'default':
             return
-        if (self.active is not None or self.term.get().strip()) and not self.apply():
+        if (self.active is not None or self.term.get().strip()) and not self.apply(notify=False):
             return
         self.data['name'] = self.name.get().strip()
         try:
             if self.panel.persist(self.data, self.uid):
+                messagebox.showinfo('Đã lưu bộ từ điển',
+                    f'Đã lưu bộ “{self.data["name"]}” trên máy và chọn cho lần phân tích tiếp theo.', parent=self)
                 self.destroy()
         except (OSError, ValueError) as exc:
             messagebox.showerror('Chưa lưu được', str(exc), parent=self)
