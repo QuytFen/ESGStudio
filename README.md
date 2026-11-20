@@ -92,8 +92,6 @@ Các nút **Mục mới / Áp dụng mục / Xóa mục / Lưu bộ từ điển
 
 Các bộ cá nhân lưu tại `tu_dien_ca_nhan/` trong thư mục dữ liệu (bản exe: `du_lieu/tu_dien_ca_nhan/`). App nhớ bộ đã chọn. Mỗi lần phân tích lưu `tu_dien_da_dung.json` cùng kết quả; sheet **Chỉ số** có `bo_tu_dien` và `ma_tu_dien` (SHA-256) để đối chiếu. Sửa từ điển không thay đổi kết quả cũ; cần chạy lại để áp dụng.
 
-Khi chạy dòng lệnh, dùng `--dictionary duong_dan.json` với bản chụp JSON của một lần chạy; bỏ tùy chọn này để dùng bộ mặc định.
-
 Bấm **Bắt đầu phân tích**, theo dõi tab **Kết quả phân tích** và **Nhật ký xử lý**. Chờ xử lý hoàn tất trước khi đóng app. Một PDF bị lỗi không ngăn các PDF khác tiếp tục được xử lý; nhật ký ghi rõ file và nguyên nhân lỗi.
 
 ### 6. Mở kết quả Excel
@@ -214,5 +212,15 @@ Kiểm tra file còn tồn tại, nơi lưu có quyền ghi và máy có ứng d
 ## Chạy từ mã nguồn
 
 Cần Python 3.10 trở lên với Tkinter. Trên Windows, chạy `Cai_dat_app.cmd` để cài các thư viện và chuẩn bị OCR, sau đó mở `Mo_app.cmd`. Mã nguồn và bản `.exe` có cùng luồng sử dụng; dữ liệu của bản mã nguồn nằm trong thư mục dự án.
+
+### Chọn từ điển khi chạy bằng dòng lệnh
+
+Nếu chạy trực tiếp bằng `python main.py`, có thể dùng tùy chọn `--dictionary` để chọn một file từ điển JSON. Ví dụ, dùng lại đúng bộ từ điển đã lưu cùng kết quả của một lần phân tích trước:
+
+```powershell
+python main.py --input bao_cao --out ket_qua --dictionary "ket_qua_lan_truoc/tu_dien_da_dung.json"
+```
+
+Thay đường dẫn trong dấu ngoặc kép bằng đường dẫn file `tu_dien_da_dung.json` của bạn. Nếu bỏ tùy chọn `--dictionary`, chương trình dùng bộ mặc định. Khi dùng giao diện, chỉ cần chọn bộ tại **Cài đặt & hướng dẫn → Bộ từ điển**.
 
 Muốn đóng gói lại, chạy `Dong_goi_exe.cmd` cho bản portable hoặc `Dong_goi_exe.cmd onefile` cho bản một file. Thông tin chi tiết còn được giữ ở [GIOI_THIEU_APP.md](GIOI_THIEU_APP.md) và [HUONG_DAN_SU_DUNG.md](HUONG_DAN_SU_DUNG.md).
